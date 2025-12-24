@@ -1,5 +1,7 @@
 
-django
+Django>=4.2
 gunicorn
-psycopg2-binary   # if using PostgreSQL
-fpdf
+ultralytics
+opencv-python
+numpy
+
