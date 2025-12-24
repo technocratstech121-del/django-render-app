@@ -1,0 +1,166 @@
+ async function loadSummaryAndReports() {
+    try {
+      const res = await fetch('/api/get-summary/');
+      if (!res.ok) return;
+      const j = await res.json();
+      window.allSummaryData = j.summary;  // ✅ store globally for filtering
+
+      if (!j.success) return;
+
+      const summaryDiv = document.getElementById('summaryContent');
+      const reportsDiv = document.getElementById('reportsList');
+
+      if (!Array.isArray(j.summary) || j.summary.length === 0) {
+        summaryDiv.innerHTML = '<p>No analysis records yet.</p>';
+        reportsDiv.innerHTML = '<p>No reports yet.</p>';
+        return;
+      }
+
+    // Build enhanced summary table
+      let table = `
+         <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="text-align:left; background:#f9f9f9;">
+            <th style="padding:8px; border-bottom:1px solid #ddd;">Video</th>
+            <th style="padding:8px; border-bottom:1px solid #ddd;">Train No</th>
+            <th style="padding:8px; border-bottom:1px solid #ddd;">LP Name</th>
+            <th style="padding:8px; border-bottom:1px solid #ddd;">LP ID</th>
+            <th style="padding:8px; border-bottom:1px solid #ddd;">Cab Type</th>
+            <th style="padding:8px; border-bottom:1px solid #ddd;">Score</th>
+            <th style="padding:8px; border-bottom:1px solid #ddd;">Remarks</th>
+            <th style="padding:8px; border-bottom:1px solid #ddd;">Report</th>
+            <th style="padding:8px; border-bottom:1px solid #ddd;">Time</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    let reportsHtml = '<ul style="list-style:none; padding-left:0;">';
+
+    j.summary.forEach((row) => {
+      const dateStr = new Date(row.created_at).toLocaleString();
+      const score = row.safety_score !== null ? `${row.safety_score.toFixed(1)}%` : '-';
+      const reportLink = row.report_path
+        ? `<a href="${row.report_path}" target="_blank">📄 View</a>`
+        : '-';
+
+      table += `
+        <tr style="transition:background 0.3s;" onmouseover="this.style.background='#f6faff'" onmouseout="this.style.background='white'">
+          <td style="padding:8px; border-bottom:1px solid #eee;">${row.video_name}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${row.train_number || '-'}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${row.lp_name || '-'}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${row.lp_id || '-'}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${row.cab_type || '-'}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${score}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${row.remarks || '-'}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${reportLink}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${dateStr}</td>
+        </tr>
+      `;
+
+      if (row.report_path)
+        reportsHtml += `<li style="padding:6px 0;"><a href="${row.report_path}" target="_blank">${row.video_name}</a></li>`;
+    });
+
+    table += '</tbody></table>';
+    reportsHtml += '</ul>';
+    summaryDiv.innerHTML = table;
+    reportsDiv.innerHTML = reportsHtml;
+
+  } catch (e) {
+    console.error('Failed to load summary:', e);
+  }
+}
+
+function filterSummaryTable() {
+  const input = document.getElementById('summarySearch');
+  const filter = input.value.toLowerCase();
+  const summaryDiv = document.getElementById('summaryContent');
+
+  const data = (window.allSummaryData || []).filter(row => {
+    return (
+      (row.train_number && row.train_number.toLowerCase().includes(filter)) ||
+      (row.lp_name && row.lp_name.toLowerCase().includes(filter)) ||
+      (row.cab_type && row.cab_type.toLowerCase().includes(filter)) ||
+      (row.video_name && row.video_name.toLowerCase().includes(filter)) ||
+      (row.remarks && row.remarks.toLowerCase().includes(filter))
+    );
+  });
+
+  if (data.length === 0) {
+    summaryDiv.innerHTML = "<p>No matching records found.</p>";
+    return;
+  }
+
+  // rebuild filtered table
+  let table = `
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left; background:#f9f9f9;">
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Video</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Train No</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">LP Name</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">LP ID</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Cab Type</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Score</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Remarks</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Report</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Time</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  data.forEach(row => {
+    const dateStr = new Date(row.created_at).toLocaleString();
+    const score = row.safety_score !== null ? `${row.safety_score.toFixed(1)}%` : '-';
+    const reportLink = row.report_path
+      ? `<a href="${row.report_path}" target="_blank">📄 View</a>`
+      : '-';
+
+    table += `
+      <tr style="transition:background 0.3s;" onmouseover="this.style.background='#f6faff'" onmouseout="this.style.background='white'">
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.video_name}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.train_number || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.lp_name || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.lp_id || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.cab_type || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${score}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.remarks || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${reportLink}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${dateStr}</td>
+      </tr>
+    `;
+  });
+
+  table += '</tbody></table>';
+  summaryDiv.innerHTML = table;
+}
+
+    // Poll DB summary periodically (optional)
+    setInterval(() => {
+      const current = document.querySelector('.section.active');
+      if (!current) return;
+      if (current.id === 'summarySection' || current.id === 'reportSection') loadSummaryAndReports();
+    }, 5000);
+    async function pollProgress() {
+    try {
+        const res = await fetch('/api/get-progress/');
+        const data = await res.json();
+        if (!data.success) return;
+
+        data.progress.forEach(p => {
+            const cleanId = p.video_name.replace(/\W/g, '_');
+            const badge = document.getElementById(`status-${cleanId}`);
+            if (badge) {
+                badge.textContent = `${p.status} (${p.progress}%)`;
+                if (p.status === "Completed") badge.className = "status-badge status-done";
+                else if (p.status === "Error") badge.className = "status-badge status-error-small";
+                else badge.className = "status-badge status-running";
+            }
+        });
+    } catch (err) {
+        console.error('Progress polling failed:', err);
+    }
+}
+setInterval(pollProgress, 3000);

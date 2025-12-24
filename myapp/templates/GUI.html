@@ -1,0 +1,2257 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>JCI-IVA — Intelligent Video Analysis</title>
+  <!-- flatpickr (date/time pickers) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+   <style>
+    /* === Visuals & Animation (preserves original design + button animations) === */
+   * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+  background-image: url("{% static 'images/train.jpg' %}");
+  background-size: cover;
+  animation: moveBg 50s linear infinite;
+  position: relative;
+  color: #2e2a2a;
+  }
+  
+@keyframes moveBg {
+  from { background-position: 0 0; }
+  to { background-position: -2000px 0; }
+}
+
+/* No overlay - train image 100% visible */
+body::before {
+  display: none; /* ✅ Completely removes the overlay */
+}
+
+/* === LAYOUT === */
+.layout {
+  display: flex;
+  width: 100%;
+  height: 100vh; /* ensures full screen height */
+  position: relative;
+  z-index: 1;
+}
+
+/* === SIDEBAR === */
+.sidebar {
+  width: 250px;
+  background: rgba(5, 35, 45, 0.95);
+  backdrop-filter: blur(8px);
+  color: #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  height: 100vh; /* fills entire height */
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar h1 {
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 18px 0;
+  background: linear-gradient(135deg, #eaeff0, #2a5298);
+  color: #eff3f5;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: #cfd8dc;
+  text-align: left;
+  padding: 14px 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s;
+}
+
+/* Hover fix — now a dark highlight instead of white */
+.nav-btn:hover {
+  background: rgba(37, 193, 241, 0.959);
+  color: #cef4f7;
+}
+
+/* Active button highlight */
+.nav-btn.active {
+  background: linear-gradient(135deg, #e8f1f1, #00b4d8);
+  color: #01222f; /* dark text for contrast */
+  font-weight: 700;
+}
+
+/* === CONTENT === */
+.section { 
+  display: none;
+  flex: 1;
+  height: 100vh;
+  overflow-y: auto;
+  background: rgba(225, 235, 236, 0.30);
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  box-sizing: border-box;
+}
+.section.active { 
+  display: block;
+  animation: fadeIn 0.6s ease; 
+}
+
+/* Home section gets flex layout */
+#homeSection.active {
+  display: flex !important;
+  flex-direction: column;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* === SECTION VISIBILITY === */
+.section { display: none; }
+.section.active { display: block; animation: fadeIn 0.6s ease; }
+
+/* Force text inside sections to dark color */
+.section * { color: #111 !important; }
+/* === MOBILE === */
+@media (max-width: 768px) {
+  .layout { flex-direction: column; }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .nav-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+  .content-area {
+    border-radius: 0;
+    padding: 16px;
+  }
+}
+/* Fix for clickable buttons in sections */
+.section-content {
+  position: relative;
+  z-index: 1;
+}
+
+.section-content button {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto !important;
+}
+
+.section-content input {
+  position: relative;
+  z-index: 50;
+}
+
+/* Ensure section header doesn't block content */
+.section-header {
+  position: relative;
+  z-index: 10;
+}
+/* ---------- Sharpened Home Section Hero ---------- */
+#homeSection {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+}
+
+/* === Crisp fixed title === */
+/* === Fixed top title in ONE LINE === */
+#homeSection .iva-title {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #696c6d;
+  white-space: nowrap;        /* ✅ keeps everything on one line */
+  text-shadow:
+    0 0 6px #00e5ff,
+    0 0 12px #00b4d8,
+    0 0 18px rgba(0,228,255,.6);
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+#homeSection .iva-title .subtitle {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #363838;
+  margin-left: 10px;          /* ✅ keeps small gap, no line break */
+  display: inline;            /* ✅ prevents wrapping to next line */
+  text-transform: none;
+}
+
+
+/* Gentle glow, not blurry */
+@keyframes pulseGlow {
+  0%,100% { text-shadow:
+      0 0 4px #00e5ff,
+      0 0 8px #00b4d8; }
+  50% { text-shadow:
+      0 0 10px #00e5ff,
+      0 0 16px #00b4d8; }
+}
+
+/* === Moving subtitle === */
+#homeSection .moving-subtitle {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-top: 9rem;
+  white-space: nowrap;
+  color: #121d1d;                     /* solid cyan instead of gradient */
+  animation: scrollText 14s linear infinite;
+}
+
+@keyframes scrollText {
+  0%   { transform: translateX(100%); opacity: .2; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(-100%); opacity: .2; }
+}
+
+/* === Tagline === */
+#homeSection p {
+  font-size: 1.3rem;
+  color: #01222f;
+  font-weight: 600;
+  margin-top: 2rem;
+}
+
+/* === Responsive === */
+@media (max-width:768px){
+  #homeSection .iva-title{font-size:2.4rem;top:25px;}
+  #homeSection .iva-title span{font-size:1rem;}
+  #homeSection .moving-subtitle{font-size:1.3rem;margin-top:7rem;}
+  #homeSection p{font-size:1rem;}
+}
+/* === BETTER SPACING FOR ANALYSIS SECTION === */
+#analysisSection .section-content {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+#analysisSection .form-section {
+  background: white;
+  padding: 25px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+  border-left: 4px solid #00b4d8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#analysisSection .form-section h3 {
+  margin-bottom: 20px;
+  color: #01222f;
+  font-size: 1.1rem;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+#analysisSection .form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+#analysisSection .form-group {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+#analysisSection .form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+#analysisSection .form-group input,
+#analysisSection .form-group select {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+#analysisSection .form-group input:focus,
+#analysisSection .form-group select:focus {
+  outline: none;
+  border-color: #00b4d8;
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.1);
+}
+
+#analysisSection .file-upload-area {
+  border: 2px dashed #00b4d8;
+  border-radius: 10px;
+  padding: 50px 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgba(255, 255, 255, 0.7);
+  margin-top: 10px;
+}
+
+#analysisSection .file-upload-area:hover {
+  background: rgba(0, 180, 216, 0.15);
+  border-color: #00e5ff;
+  transform: translateY(-2px);
+}
+
+#analysisSection .item-list {
+  margin-top: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+#analysisSection .list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border-left: 3px solid #00b4d8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+#analysisSection .progress-container {
+  margin-top: 25px;
+  padding: 25px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Better button spacing */
+#analysisSection .main-btn {
+  padding: 12px 24px;
+  margin: 0 8px;
+  font-size: 15px;
+}
+/* === PROGRESS BAR STYLES === */
+.progress-container {
+  display: none;
+  margin-top: 25px;
+  padding: 25px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 40px;
+  background: #e0e0e0;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00b4d8, #00f2fe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.status-message {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.status-success {
+  color: #4caf50;
+  font-weight: 600;
+  padding: 10px;
+  background: #e8f5e9;
+  border-radius: 5px;
+}
+
+.status-error {
+  color: #f44336;
+  font-weight: 600;
+  padding: 10px;
+  background: #ffebee;
+  border-radius: 5px;
+}
+
+/* Status badges for video items */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-running {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-done {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-error-small {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  #analysisSection .section-content {
+    padding: 15px;
+  }
+  
+  #analysisSection .form-section {
+    padding: 20px;
+  }
+  
+  #analysisSection .form-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  #analysisSection .form-group {
+    min-width: 100%;
+  }
+}
+
+/* === PROGRESS BAR STYLES === */
+.progress-container {
+  display: none;
+  margin-top: 25px;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 40px;
+  background: #e0e0e0;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 15px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00b4d8, #00f2fe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  transition: width 0.5s ease;
+  width: 0%;
+  box-shadow: 0 2px 4px rgba(0, 180, 216, 0.4);
+}
+
+.status-message {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 10px;
+  min-height: 30px;
+}
+
+.status-success {
+  color: #2e7d32;
+  font-weight: 600;
+  padding: 12px;
+  background: rgba(232, 245, 233, 0.95);
+  border-radius: 6px;
+  border-left: 4px solid #4caf50;
+}
+
+.status-error {
+  color: #c62828;
+  font-weight: 600;
+  padding: 12px;
+  background: rgba(255, 235, 238, 0.95);
+  border-radius: 6px;
+  border-left: 4px solid #f44336;
+}
+
+/* Status badges for individual video items */
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.status-running {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.status-done {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-error-small {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+  </style>
+</head>
+<body>
+   <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="layout">
+    <div class="sidebar" id="sidebar">
+    <h1>🚂 JCI-IVA</h1>
+   <button class="nav-btn" onclick="navigateTo('homeSection',this)">🏠 <span class="nav-text">Home</span></button>
+    <button class="nav-btn" onclick="navigateTo('summarySection',this)">📊 <span class="nav-text">Summary</span></button>
+    <button class="nav-btn" onclick="navigateTo('reportSection',this)">📄 <span class="nav-text">Report</span></button>
+    <button class="nav-btn" onclick="navigateTo('lpProfileSection',this)">👤 <span class="nav-text">LP Profile</span></button>
+    <button class="nav-btn" onclick="navigateTo('analysisSection',this)">🔍 <span class="nav-text">New Analysis</span></button>
+   <button class="nav-btn active" onclick="navigateTo('loginSection',this)">🔐 <span class="nav-text">Login</span></button>
+  </div>
+    <!-- HOME SECTION -->
+    <div id="homeSection" class="section">
+  <div class="home-banner">
+    <h1 class="iva-title">🚆 JCI–IVA <span>(Intelligent Video Analysis)</span></h1>
+    <h2 class="moving-subtitle">Railway Safety Monitoring Dashboard</h2>
+    <p>Empowering Safe and Smarter Railways through Intelligent Vision Systems</p>
+  </div>
+</div>
+    <!-- SUMMARY SECTION -->
+      <div id="summarySection" class="section">
+        <div class="section-header">
+  <h1>🚆 JCI—IVA <span style="font-size: 0.5em; font-weight: 500;">(Intelligent Video Analysis)</span></h1>
+</div>
+      <div style="padding:12px 14px;">
+        <h2>Summary</h2>
+        <div id="summaryContent">No summary available yet. Run an analysis to populate this area.</div>
+          <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+  <input
+    type="text"
+    id="summarySearch"
+    placeholder="🔍 Search by Train No, LP Name, Cab Type..."
+    style="width:60%; padding:8px 12px; border:1px solid #ccc; border-radius:6px; font-size:14px;"
+    onkeyup="filterSummaryTable()"
+  >
+  <button
+  onclick="console.log('Refresh clicked'); loadSummaryAndReports();"
+  style="padding:8px 12px; background:#99c1e9d5; color:rgb(17, 16, 16);  border: 2px dashed #0cbdd4c9; border-radius:6px; cursor:pointer; font-weight:600; position:relative; z-index:9999;">
+  ⟳ Refresh
+</button>
+</div>
+        <div style="margin-top:14px;"><button class="main-btn" onclick="goBack()">⬅ Back</button></div>
+      </div>
+    </div>
+
+    <!-- REPORT SECTION -->
+    <div id="reportSection" class="section">
+      <div class="section-header">
+  <h1>🚆 JCI—IVA <span style="font-size: 0.5em; font-weight: 500;">(Intelligent Video Analysis)</span></h1>
+</div>
+      <div style="padding:12px 14px;">
+        <h2>Reports</h2>
+        <div id="reportsList">No reports available.</div>
+        <div style="margin-top:14px;"><button class="main-btn" onclick="goBack()">⬅ Back</button></div>
+      </div>
+    </div>
+
+<!-- LP PROFILE SECTION -->
+<!-- Replace your existing LP PROFILE section in GUI.html with this -->
+
+<!-- LP PROFILE SECTION -->
+<div id="lpProfileSection" class="section">
+  <div class="section-header">
+    <h1>🚆 JCI—IVA <span style="font-size: 0.5em; font-weight: 500;">(Intelligent Video Analysis)</span></h1>
+  </div>
+  
+  <div style="padding:20px; max-width:1400px; margin:0 auto;">
+    <h2 style="margin-bottom:20px;">👤 Loco Pilot Profiles</h2>
+    
+    <!-- Add New LP Profile Form -->
+    <div class="form-section" style="border-left-color:#4facfe; margin-bottom:30px;">
+      <h3>➕ Add New LP Profile</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="newLpName">LP Name *</label>
+          <input type="text" id="newLpName" placeholder="Enter LP Name" required>
+        </div>
+        <div class="form-group">
+          <label for="newLpId">LP ID *</label>
+          <input type="text" id="newLpId" placeholder="Enter LP ID" required>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="newLpPhone">Phone Number</label>
+          <input type="tel" id="newLpPhone" placeholder="Enter Phone Number">
+        </div>
+        <div class="form-group">
+          <label for="newLpEmail">Email</label>
+          <input type="email" id="newLpEmail" placeholder="Enter Email">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="newLpDivision">Division</label>
+          <input type="text" id="newLpDivision" placeholder="Enter Division">
+        </div>
+        <div class="form-group">
+          <label for="newLpExperience">Experience (Years)</label>
+          <input type="number" id="newLpExperience" placeholder="Enter Years of Experience" min="0">
+        </div>
+      </div>
+      
+      <div style="text-align:center; margin-top:20px;">
+        <button class="main-btn success" onclick="saveLPProfile()">💾 Save LP Profile</button>
+        <button class="main-btn" onclick="clearLPForm()">🔄 Clear Form</button>
+      </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="form-section" style="border-left-color:#ff9800;">
+      <h3>🔍 Search LP Profile</h3>
+      <div class="form-row">
+        <div class="form-group" style="flex:2;">
+          <label for="lpSearchInput">Search by LP Name or LP ID</label>
+          <input
+            type="text"
+            id="lpSearchInput"
+            placeholder="Enter LP Name or LP ID..."
+            style="padding:12px 15px; border:2px solid #00b4d8; border-radius:8px; font-size:14px;"
+            onkeypress="if(event.key==='Enter') searchLPProfiles()"
+          >
+        </div>
+        <div class="form-group" style="align-self:flex-end;">
+          <button
+            class="main-btn success"
+            onclick="searchLPProfiles()"
+            style="padding:12px 24px;">
+            🔍 Search
+          </button>
+          <button
+            class="main-btn"
+            onclick="clearLPSearch()"
+            style="padding:12px 24px;">
+            🔄 Clear
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LP Profiles Grid -->
+    <div id="lpProfilesGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:20px; margin-top:30px; margin-bottom:30px;">
+      <!-- Initial empty state -->
+      <div style="grid-column:1/-1; text-align:center; padding:60px 20px; background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <div style="font-size:48px; margin-bottom:20px;">👤</div>
+        <h3 style="color:#01222f; margin-bottom:10px;">Search for LP Profiles</h3>
+        <p style="color:#666;">Use the search box above to find LP profiles by name or ID.</p>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top:30px; text-align:center;">
+      <button class="main-btn" onclick="goBack()">⬅ Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* LP Profile Card Styles */
+.lp-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #00b4d8;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.lp-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 180, 216, 0.3);
+}
+
+.lp-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.lp-card-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #01222f;
+}
+
+.lp-card-badge {
+  background: #00b4d8;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.lp-card-info {
+  margin: 10px 0;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.lp-card-info strong {
+  color: #01222f;
+  margin-right: 5px;
+}
+
+.lp-card-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.lp-stat {
+  text-align: center;
+}
+
+.lp-stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #00b4d8;
+}
+
+.lp-stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.lp-analyses-list {
+  margin-top: 15px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.lp-analysis-item {
+  background: #f5f5f5;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border-left: 3px solid #00b4d8;
+  font-size: 13px;
+}
+
+.lp-analysis-item:hover {
+  background: #e8f4ff;
+}
+
+.score-good {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.score-moderate {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.score-poor {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.main-btn.success {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+}
+
+.main-btn.success:hover {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+}
+
+.main-btn {
+  padding: 12px 24px;
+  margin: 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid #00b4d8;
+  background: white;
+  color: #00b4d8;
+}
+
+.main-btn:hover {
+  background: #00b4d8;
+  color: white;
+}
+</style>
+
+<script>
+// Global variable to store searched LP profile
+let searchedLPProfile = null;
+
+// Search LP Profiles
+async function searchLPProfiles() {
+  const searchInput = document.getElementById('lpSearchInput');
+  const searchTerm = searchInput.value.trim().toLowerCase();
+  
+  if (!searchTerm) {
+    alert('⚠️ Please enter an LP Name or LP ID to search!');
+    return;
+  }
+  
+  const grid = document.getElementById('lpProfilesGrid');
+  grid.innerHTML = '<p style="text-align:center; color:#666; grid-column:1/-1;">🔍 Searching...</p>';
+  
+  try {
+    console.log('Searching for:', searchTerm);
+    
+    // Fetch all analysis records
+    const res = await fetch('/api/get-summary/');
+    if (!res.ok) {
+      grid.innerHTML = '<p style="text-align:center; color:red; grid-column:1/-1;">❌ Failed to search LP profiles.</p>';
+      return;
+    }
+    
+    const data = await res.json();
+    if (!data.success || !data.summary) {
+      grid.innerHTML = '<p style="text-align:center; color:#666; grid-column:1/-1;">No LP profiles found in database.</p>';
+      return;
+    }
+    
+    // Search for matching LP (include both manual profiles and analysis records)
+    const matchingRecords = data.summary.filter(record => {
+      const lpName = (record.lp_name || record.lpName || '').toLowerCase();
+      const lpId = (record.lp_id || record.lpId || '').toLowerCase();
+      
+      // Match by name or ID
+      return lpName.includes(searchTerm) || lpId.includes(searchTerm);
+    });
+    
+    console.log('Found records:', matchingRecords.length);
+    
+    if (matchingRecords.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:40px 20px; background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+          <div style="font-size:48px; margin-bottom:15px;">🔍</div>
+          <h3 style="color:#01222f; margin-bottom:10px;">No Results Found</h3>
+          <p style="color:#666;">No LP profile found matching "${searchInput.value}".<br>Make sure the LP has completed at least one analysis.</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Separate manual profile data from analysis records
+    const manualProfile = matchingRecords.find(r => 
+      r.video_name && r.video_name.startsWith('LP_PROFILE_')
+    );
+    
+    const analysisRecords = matchingRecords.filter(r => 
+      !r.video_name || !r.video_name.startsWith('LP_PROFILE_')
+    );
+    
+    // Build LP data
+    const lpData = {
+      name: matchingRecords[0].lp_name || matchingRecords[0].lpName || 'Unknown',
+      id: matchingRecords[0].lp_id || matchingRecords[0].lpId || 'N/A',
+      phone: '',
+      email: '',
+      division: '',
+      experience: '',
+      analyses: [],
+      totalScore: 0,
+      hasManualProfile: !!manualProfile
+    };
+    
+    // Extract manual profile info from remarks if exists
+    if (manualProfile && manualProfile.remarks) {
+      const remarks = manualProfile.remarks;
+      const phoneMatch = remarks.match(/Phone: ([^,]*)/);
+      const emailMatch = remarks.match(/Email: ([^,]*)/);
+      const divisionMatch = remarks.match(/Division: ([^,]*)/);
+      const expMatch = remarks.match(/Experience: ([^,\s]*)/);
+      
+      lpData.phone = phoneMatch ? phoneMatch[1].trim() : '';
+      lpData.email = emailMatch ? emailMatch[1].trim() : '';
+      lpData.division = divisionMatch ? divisionMatch[1].trim() : '';
+      lpData.experience = expMatch ? expMatch[1].trim() : '';
+    }
+    
+    // Add analysis records
+    analysisRecords.forEach(record => {
+      lpData.analyses.push({
+        video: record.video_name,
+        train: record.train_number || record.trainNumber || 'N/A',
+        date: record.created_at ? new Date(record.created_at).toLocaleDateString() : 'N/A',
+        score: record.safety_score || 0,
+        remarks: record.remarks || 'No remarks',
+        report: record.report_path
+      });
+      lpData.totalScore += (record.safety_score || 0);
+    });
+    
+    lpData.avgScore = lpData.analyses.length > 0 ? (lpData.totalScore / lpData.analyses.length).toFixed(1) : 0;
+    
+    // Render the LP profile card
+    renderSingleLPProfile(lpData);
+    
+  } catch (error) {
+    console.error('Error searching LP profiles:', error);
+    grid.innerHTML = '<p style="text-align:center; color:red; grid-column:1/-1;">❌ Error searching LP profiles.</p>';
+  }
+}
+
+// Render Single LP Profile Card
+function renderSingleLPProfile(lp) {
+  const grid = document.getElementById('lpProfilesGrid');
+  
+  // Determine score class
+  let scoreClass = 'score-good';
+  if (lp.avgScore < 60) scoreClass = 'score-poor';
+  else if (lp.avgScore < 75) scoreClass = 'score-moderate';
+  
+  grid.innerHTML = `
+    <div class="lp-card" style="grid-column:1/-1; max-width:800px; margin:0 auto;">
+      <div class="lp-card-header">
+        <div class="lp-card-title">👤 ${lp.name}</div>
+        <div class="lp-card-badge">ID: ${lp.id}</div>
+      </div>
+      
+      ${lp.hasManualProfile ? `
+        <div class="lp-card-info" style="background:#f0f8ff; padding:12px; border-radius:6px; margin-bottom:15px;">
+          <strong style="color:#00b4d8;">📋 Profile Information:</strong><br>
+          ${lp.phone ? `<div style="margin-top:4px;">📞 Phone: ${lp.phone}</div>` : ''}
+          ${lp.email ? `<div>✉️ Email: ${lp.email}</div>` : ''}
+          ${lp.division ? `<div>🏢 Division: ${lp.division}</div>` : ''}
+          ${lp.experience ? `<div>⏱️ Experience: ${lp.experience} years</div>` : ''}
+        </div>
+      ` : ''}
+      
+      <div class="lp-card-stats">
+        <div class="lp-stat">
+          <div class="lp-stat-value ${scoreClass}">${lp.avgScore}%</div>
+          <div class="lp-stat-label">Average Safety Score</div>
+        </div>
+        <div class="lp-stat">
+          <div class="lp-stat-value">${lp.analyses.length}</div>
+          <div class="lp-stat-label">Total Analyses</div>
+        </div>
+      </div>
+      
+      ${lp.analyses.length > 0 ? `
+        <div class="lp-analyses-list">
+          <strong style="font-size:14px; color:#01222f; display:block; margin-bottom:10px;">📋 All Analyses:</strong>
+          ${lp.analyses.map(analysis => `
+            <div class="lp-analysis-item">
+              <div><strong>📹 ${analysis.video}</strong></div>
+              <div style="font-size:12px; color:#666; margin-top:4px;">
+                🚂 Train: ${analysis.train} | 📅 ${analysis.date}
+              </div>
+              <div style="margin-top:6px;">
+                <span style="font-size:12px; color:#666;">Remarks:</span>
+                <span style="font-size:12px; color:#333;">${analysis.remarks}</span>
+              </div>
+              <div style="margin-top:4px; display:flex; justify-content:space-between; align-items:center;">
+                <span class="${analysis.score >= 75 ? 'score-good' : analysis.score >= 60 ? 'score-moderate' : 'score-poor'}">
+                  Score: ${analysis.score}%
+                </span>
+                ${analysis.report ? `<a href="${analysis.report}" target="_blank" style="color:#00b4d8; text-decoration:none; font-weight:600;">📄 View Report</a>` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div style="text-align:center; padding:20px; background:#fff3cd; border-radius:8px; margin-top:15px;">
+          <p style="color:#856404; margin:0;">📭 No analyses completed yet for this LP.</p>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+// Clear LP Search
+function clearLPSearch() {
+  // ✅ Clear search input
+  document.getElementById('lpSearchInput').value = '';
+  
+  // ✅ Reset to initial empty state
+  const grid = document.getElementById('lpProfilesGrid');
+  grid.innerHTML = `
+    <div style="grid-column:1/-1; text-align:center; padding:60px 20px; background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <div style="font-size:48px; margin-bottom:20px;">👤</div>
+      <h3 style="color:#01222f; margin-bottom:10px;">Search for LP Profiles</h3>
+      <p style="color:#666;">Use the search box above to find LP profiles by name or ID.</p>
+    </div>
+  `;
+  
+  console.log('✅ Search cleared');
+}
+
+// Save New LP Profile
+async function saveLPProfile() {
+  const name = document.getElementById('newLpName').value.trim();
+  const id = document.getElementById('newLpId').value.trim();
+  const phone = document.getElementById('newLpPhone').value.trim();
+  const email = document.getElementById('newLpEmail').value.trim();
+  const division = document.getElementById('newLpDivision').value.trim();
+  const experience = document.getElementById('newLpExperience').value.trim();
+  
+  if (!name || !id) {
+    alert('⚠️ LP Name and LP ID are required!');
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/save-lp-profile/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lp_name: name,
+        lp_id: id,
+        phone: phone,
+        email: email,
+        division: division,
+        experience: experience
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
+      alert('✅ LP Profile saved successfully!\n\nNote: This LP will appear in search only after completing an analysis.');
+      clearLPForm();
+    } else {
+      alert('❌ Failed to save LP Profile: ' + (result.error || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Error saving LP profile:', error);
+    alert('❌ Error saving LP Profile. Please try again.');
+  }
+}
+
+// Clear LP Form
+function clearLPForm() {
+  document.getElementById('newLpName').value = '';
+  document.getElementById('newLpId').value = '';
+  document.getElementById('newLpPhone').value = '';
+  document.getElementById('newLpEmail').value = '';
+  document.getElementById('newLpDivision').value = '';
+  document.getElementById('newLpExperience').value = '';
+}
+
+// ✅ Reset view when opening LP Profile section
+document.addEventListener('DOMContentLoaded', function() {
+  const originalNavigateTo = window.navigateTo;
+  window.navigateTo = function(id, btn) {
+    originalNavigateTo(id, btn);
+    if (id === 'lpProfileSection') {
+      clearLPSearch(); // Always start with empty state
+    }
+  };
+});
+</script>
+
+    <!-- LOGIN -->
+    <!-- Replace your LOGIN SECTION in GUI.html with this -->
+
+<!-- LOGIN SECTION -->
+<div id="loginSection" class="section active">
+  <div style="display:flex; justify-content:center; align-items:center; min-height:100vh; padding:20px;">
+    <div class="login-container">
+      <div class="login-header">
+        <h1>🚆 JCI—IVA</h1>
+        <p>Intelligent Video Analysis System</p>
+      </div>
+      
+      <div class="login-form">
+        <h2 style="text-align:center; margin-bottom:30px; color:#01222f;">Login</h2>
+        
+        <div class="form-group">
+          <label for="loginUserId">
+            <span style="font-size:18px;">👤</span> User ID
+          </label>
+          <input 
+            type="text" 
+            id="loginUserId" 
+            placeholder="Enter your User ID"
+            onkeypress="if(event.key==='Enter') loginUser()"
+            required
+          >
+        </div>
+        
+        <div class="form-group" style="position:relative;">
+          <label for="loginPassword">
+            <span style="font-size:18px;">🔒</span> Password
+          </label>
+          <input 
+            type="password" 
+            id="loginPassword" 
+            placeholder="Enter your Password"
+            onkeypress="if(event.key==='Enter') loginUser()"
+            required
+          >
+          <button 
+            type="button"
+            onclick="togglePassword()"
+            style="position:absolute; right:12px; top:38px; background:none; border:none; cursor:pointer; font-size:18px;"
+            title="Show/Hide Password"
+          >
+            👁️
+          </button>
+        </div>
+        
+        <div id="loginError" class="login-error" style="display:none;"></div>
+        
+        <button class="login-btn" onclick="loginUser()">
+          <span id="loginBtnText">🔐 Login</span>
+        </button>
+        
+        <div style="text-align:center; margin-top:20px;">
+          <a href="#" onclick="showForgotPassword(); return false;" style="color:#00b4d8; text-decoration:none; font-size:14px;">
+            Forgot Password?
+          </a>
+        </div>
+      </div>
+      
+      <div class="login-footer">
+        <p>© 2025 JCI-IVA R&D Team. All Rights Reserved.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Login Container Styles */
+.login-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  max-width: 450px;
+  width: 100%;
+  backdrop-filter: blur(10px);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.login-header h1 {
+  font-size: 2.5rem;
+  color: #00b4d8;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 4px rgba(0, 180, 216, 0.3);
+}
+
+.login-header p {
+  color: #666;
+  font-size: 14px;
+}
+
+.login-form {
+  margin-bottom: 30px;
+}
+
+.login-form .form-group {
+  margin-bottom: 25px;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.3s;
+  background: white;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: #00b4d8;
+  box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.1);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #00b4d8, #00f2fe);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(0, 180, 216, 0.3);
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 180, 216, 0.4);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.login-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.login-error {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #f44336;
+  font-size: 14px;
+}
+
+.login-footer {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.login-footer p {
+  color: #999;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 30px 20px;
+  }
+  
+  .login-header h1 {
+    font-size: 2rem;
+  }
+}
+</style>
+
+<script>
+// Toggle password visibility
+function togglePassword() {
+  const passwordInput = document.getElementById('loginPassword');
+  const type = passwordInput.type === 'password' ? 'text' : 'password';
+  passwordInput.type = type;
+}
+
+// Show/Hide login error
+function showLoginError(message) {
+  const errorDiv = document.getElementById('loginError');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    errorDiv.style.display = 'none';
+  }, 5000);
+}
+
+// Login User
+async function loginUser() {
+  const userId = document.getElementById('loginUserId').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  
+  // Validation
+  if (!userId || !password) {
+    showLoginError('⚠️ Please enter both User ID and Password.');
+    return;
+  }
+  
+  // Disable button during login
+  const loginBtn = document.querySelector('.login-btn');
+  const loginBtnText = document.getElementById('loginBtnText');
+  loginBtn.disabled = true;
+  loginBtnText.textContent = '🔄 Logging in...';
+  
+  try {
+    const response = await fetch('/api/login/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        password: password
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok && result.success) {
+      // Store user info in session storage
+      sessionStorage.setItem('isLoggedIn', 'true');
+      sessionStorage.setItem('userId', result.user_id);
+      sessionStorage.setItem('userName', result.user_name);
+      sessionStorage.setItem('userRole', result.role || 'user');
+      
+      // Show success message
+      loginBtnText.textContent = '✅ Login Successful!';
+      
+      // Redirect to home after short delay
+      setTimeout(() => {
+        navigateTo('homeSection');
+        updateUIForLoggedInUser();
+      }, 1000);
+      
+    } else {
+      showLoginError(result.message || '❌ Invalid User ID or Password. Please try again.');
+      loginBtn.disabled = false;
+      loginBtnText.textContent = '🔐 Login';
+    }
+    
+  } catch (error) {
+    console.error('Login error:', error);
+    showLoginError('❌ Connection error. Please check your internet and try again.');
+    loginBtn.disabled = false;
+    loginBtnText.textContent = '🔐 Login';
+  }
+}
+
+// Update UI for logged-in user
+function updateUIForLoggedInUser() {
+  const userName = sessionStorage.getItem('userName') || 'User';
+  const userRole = sessionStorage.getItem('userRole') || 'user';
+  
+  // Update navigation to show logout instead of login
+  const navButtons = document.querySelectorAll('.nav-btn');
+  navButtons.forEach(btn => {
+    if (btn.textContent.includes('Login') || btn.textContent.includes('🔐')) {
+      btn.innerHTML = '🚪 <span class="nav-text">Logout</span>';
+      btn.onclick = () => logoutUser();
+      btn.classList.remove('active');
+    }
+  });
+  
+  console.log(`✅ Welcome, ${userName} (${userRole})!`);
+}
+
+// Logout User
+function logoutUser() {
+  if (confirm('Are you sure you want to logout?')) {
+    // Clear session
+    sessionStorage.clear();
+    
+    // Reset all sections to hidden
+    document.querySelectorAll('.section').forEach(section => {
+      section.classList.remove('active');
+    });
+    
+    // Show login section
+    document.getElementById('loginSection').classList.add('active');
+    
+    // Reset navigation buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.textContent.includes('Logout') || btn.textContent.includes('🚪')) {
+        btn.innerHTML = '🔐 <span class="nav-text">Login</span>';
+        btn.onclick = function() { navigateTo('loginSection', this); };
+        btn.classList.add('active');
+      }
+    });
+    
+    // Reset login form
+    document.getElementById('loginUserId').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').type = 'password';
+    document.getElementById('loginBtnText').textContent = '🔐 Login';
+    document.querySelector('.login-btn').disabled = false;
+    
+    // Hide any error messages
+    document.getElementById('loginError').style.display = 'none';
+    
+    console.log('✅ Logged out successfully');
+  }
+}
+
+// Check if user is already logged in (removed - now handled by init function)
+
+// Forgot password functionality
+function showForgotPassword() {
+  alert('Please contact your system administrator to reset your password.\n\nEmail: admin@jci-iva.com\nPhone: +91-XXXXXXXXXX');
+}
+
+// Initialize on page load - MUST BE CALLED FIRST
+(function initializeAuth() {
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+  
+  if (isLoggedIn === 'true') {
+    // User is logged in - allow access
+    updateUIForLoggedInUser();
+  } else {
+    // User not logged in - force to login screen
+    // Make sure all sections are hidden except login
+    document.querySelectorAll('.section').forEach(section => {
+      section.classList.remove('active');
+    });
+    document.getElementById('loginSection').classList.add('active');
+    
+    // Update sidebar to show login as active
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.textContent.includes('Login')) {
+        btn.classList.add('active');
+      }
+    });
+  }
+})();
+
+// Protect routes - require login for ALL sections except login
+const sections = ['homeSection','summarySection','reportSection','lpProfileSection','analysisSection','loginSection'];
+
+// Override the global navigateTo function
+window.navigateTo = function(id, btn) {
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+  
+  // Allow login section always
+  if (id === 'loginSection') {
+    sections.forEach(s => {
+      const el = document.getElementById(s);
+      if (el) el.classList.remove('active');
+    });
+    document.getElementById(id)?.classList.add('active');
+    
+    // Update nav buttons
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    return;
+  }
+  
+  // Block all other sections if not logged in
+  if (isLoggedIn !== 'true') {
+    alert('🔒 Access Denied!\n\nPlease login to access the application.');
+    
+    // Force back to login
+    sections.forEach(s => {
+      const el = document.getElementById(s);
+      if (el) el.classList.remove('active');
+    });
+    document.getElementById('loginSection')?.classList.add('active');
+    
+    // Update sidebar
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      b.classList.remove('active');
+      if (b.textContent.includes('Login')) {
+        b.classList.add('active');
+      }
+    });
+    return;
+  }
+  
+  // User is logged in - allow navigation
+  sections.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.classList.remove('active');
+  });
+  document.getElementById(id)?.classList.add('active');
+  
+  // Update nav buttons
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  
+  // Special handlers for specific sections
+  if (id === 'analysisSection') {
+    if (typeof initializeDateTimePickers === 'function') {
+      initializeDateTimePickers();
+    }
+  }
+  if (id === 'summarySection' || id === 'reportSection') {
+    if (typeof loadSummaryAndReports === 'function') {
+      loadSummaryAndReports();
+    }
+  }
+  if (id === 'lpProfileSection') {
+    if (typeof clearLPSearch === 'function') {
+      clearLPSearch();
+    }
+  }
+};
+
+// Block direct section clicks if not logged in
+document.addEventListener('DOMContentLoaded', function() {
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+  
+  if (isLoggedIn !== 'true') {
+    // Ensure login section is shown
+    document.querySelectorAll('.section').forEach(section => {
+      section.classList.remove('active');
+    });
+    document.getElementById('loginSection').classList.add('active');
+  }
+});
+</script>
+
+    <!-- ANALYSIS SECTION (expanded, contains full form + upload + per-video progress) -->
+      <div id="analysisSection" class="section">
+        <div class="section-header">
+  <h1>🚆 JCI—IVA <span style="font-size: 0.5em; font-weight: 500;">(Intelligent Video Analysis)</span></h1>
+</div>
+      <div style="padding:12px;">
+        <div class="form-section" style="border-left-color:#4facfe;">
+          <h3>🔍 New Analysis - Basic Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="dateInput">Date</label>
+              <input type="text" id="dateInput" placeholder="Select Date" readonly>
+            </div>
+            <div class="form-group">
+              <label for="timeInput">Time</label>
+              <input type="text" id="timeInput" placeholder="Select Time" readonly>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="locoNumber">Loco/EMU Number</label>
+              <input type="text" id="locoNumber" placeholder="Enter Loco/EMU Number">
+            </div>
+            <div class="form-group">
+              <label for="trainNumber">Train Number</label>
+              <input type="text" id="trainNumber" placeholder="Enter Train Number">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>🚂 Cab Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cabType">Cab Type</label>
+              <select id="cabType">
+                <option>EMU</option>
+                <option>Vande Bharat</option>
+                <option>WAP</option>
+                <option>WAG</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>👤 LP Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="lpName">LP Name</label>
+              <input type="text" id="lpName" placeholder="Enter LP Name">
+            </div>
+            <div class="form-group">
+              <label for="lpId">LP ID</label>
+              <input type="text" id="lpId" placeholder="Enter LP ID">
+            </div>
+            <div class="form-group" style="align-self:flex-end;">
+              <button class="main-btn success" onclick="addLP()">➕ Add LP</button>
+            </div>
+          </div>
+          <div id="lpList" class="item-list"></div>
+        </div>
+
+        <div class="form-section">
+          <h3>🎥 Video Upload</h3>
+          <div class="file-upload-area" onclick="document.getElementById('videoInput').click()">
+            <div style="font-size:42px;">📹</div>
+            <div style="font-size:1.05rem;">Click to add videos (you can add multiple)</div>
+            <div style="color:#666; margin-top:6px;">Supported: MP4, AVI, MOV</div>
+          </div>
+
+          <!-- actual input (hidden) -->
+          <input type="file" id="videoInput" multiple accept="video/*" style="display:none" onchange="handleVideoUpload(event)">
+          <div id="videoList" class="item-list" style="margin-top:12px;"></div>
+        </div>
+
+        <!-- per-video progress area -->
+        <div id="progressContainer" class="progress-container">
+          <div class="progress-bar"><div id="progressFill" class="progress-fill">0%</div></div>
+          <div id="statusMessage" class="status-message"></div>
+        </div>
+
+        <div style="text-align:center; margin-top:30px; padding-top:20px; border-top: 2px solid #e0e0e0;">
+  <button class="main-btn success" onclick="startAnalysis()">🚀 Start Analysis</button>
+  <button class = "main-btn" type = "reset" onclick="resetForm()">Reset</button>
+  <button class="main-btn" onclick="goBack()">⬅ Back</button>
+</div>
+      </div>
+      </div>
+      </div>
+  <!-- flatpickr -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+ // const sections = ['homeSection','summarySection','reportSection','lpProfileSection','analysisSection','loginSection'];
+ // navigateTo function is now defined in the login system
+// It handles authentication checks automatically
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('show');
+  }
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) document.getElementById('sidebar').classList.remove('show');
+  });
+</script>
+
+  <script>
+    /* === SPA Navigation === */
+      // This function is now defined in the login system script
+// It will automatically check authentication before allowing navigation
+    function goBack() {
+      sections.forEach(s => { const el = document.getElementById(s); if (el) el.classList.remove('active'); });
+      document.getElementById('homeSection').classList.add('active');
+    }
+
+    /* === Particles (visual effect) === */
+    function createParticles() {
+      const container = document.getElementById('particles');
+      if (!container || container.childElementCount > 0) return;
+      const count = 40;
+      for (let i=0;i<count;i++){
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random()*100 + '%';
+        p.style.top = Math.random()*100 + '%';
+        p.style.opacity = (Math.random()*0.6 + 0.2);
+        p.style.transform = 'translateY(0)';
+        p.style.animationDuration = (Math.random()*12 + 8) + 's';
+        container.appendChild(p);
+      }
+    }
+
+    /* === date/time pickers === */
+    let datePicker=null, timePicker=null;
+    function initializeDateTimePickers(){
+      if (!datePicker) {
+        datePicker = flatpickr("#dateInput", { dateFormat:"Y-m-d", defaultDate: new Date(), allowInput:false });
+      }
+      if (!timePicker) {
+        timePicker = flatpickr("#timeInput", { enableTime:true, noCalendar:true, dateFormat:"H:i", time_24hr:true, defaultDate:new Date(), allowInput:false });
+      }
+      createParticles();
+    }
+
+    //window.onload = function() {
+      //navigateTo('homeSection');
+      //createParticles();
+   // };
+
+    /* === LP management === */
+    let lpData = [];
+    function addLP() {
+      const name = document.getElementById('lpName').value.trim();
+      const id = document.getElementById('lpId').value.trim();
+      if (!name || !id) { alert('Please enter LP Name and LP ID'); return; }
+      lpData.push({name,id});
+      renderLPList();
+      document.getElementById('lpName').value = ''; document.getElementById('lpId').value = '';
+    }
+    function renderLPList() {
+      const div = document.getElementById('lpList'); div.innerHTML = '';
+      lpData.forEach((lp,i)=> {
+        const item = document.createElement('div'); item.className='list-item';
+        item.innerHTML = `<div><strong>${lp.name}</strong> &nbsp; <small>${lp.id}</small></div>
+                          <div><button class="main-btn danger" onclick="removeLP(${i})" style="padding:8px 12px; font-weight:600;">Remove</button></div>`;
+        div.appendChild(item);
+      });
+    }
+    function removeLP(idx) { lpData.splice(idx,1); renderLPList(); }
+    
+    /* === Video upload handling === */
+    
+// Global array to store files
+let videoFiles = [];
+
+// Function 1: Handle file selection and upload
+async function handleVideoUpload(e) {
+    const files = Array.from(e.target.files || []);
+    
+    if (files.length === 0) return;
+
+    const videoListDiv = document.getElementById('videoList');
+    
+    // Prepare UI for each file
+    const filesToUpload = [];
+    files.forEach(file => {
+        // Avoid duplicates
+        if (!videoFiles.some(v => v.name === file.name && v.size === file.size)) {
+            videoFiles.push(file);
+            filesToUpload.push(file);
+            
+            const sanitizedId = file.name.replace(/[^\w]/g, '_');
+            
+            // Add to list with upload status
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <div><strong>${file.name}</strong> (${(file.size / 1024 / 1024).toFixed(2)} MB)</div>
+                <div id="status-${sanitizedId}">⏳ Waiting to upload...</div>
+            `;
+            videoListDiv.appendChild(item);
+        }
+    });
+
+    if (filesToUpload.length === 0) {
+        alert('All selected files are already in the list.');
+        return;
+    }
+
+    // Upload all new files together
+    const formData = new FormData();
+    filesToUpload.forEach(file => {
+        formData.append('videos', file);  // 'videos' matches backend
+        const sanitizedId = file.name.replace(/[^\w]/g, '_');
+        const statusEl = document.getElementById(`status-${sanitizedId}`);
+        if (statusEl) statusEl.textContent = '⏳ Uploading...';
+    });
+
+    try {
+        const response = await fetch('/api/upload-video/', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        console.log('Upload response:', data);
+
+        if (response.ok && data.success) {
+            // Mark all as uploaded
+            filesToUpload.forEach(file => {
+                const sanitizedId = file.name.replace(/[^\w]/g, '_');
+                const statusEl = document.getElementById(`status-${sanitizedId}`);
+                if (statusEl) statusEl.textContent = '✅ Uploaded';
+            });
+            
+            alert(`Successfully uploaded ${filesToUpload.length} file(s)!`);
+        } else {
+            throw new Error(data.message || 'Upload failed');
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Upload failed: ' + error.message);
+        
+        // Mark all as failed
+        filesToUpload.forEach(file => {
+            const sanitizedId = file.name.replace(/[^\w]/g, '_');
+            const statusEl = document.getElementById(`status-${sanitizedId}`);
+            if (statusEl) statusEl.textContent = '❌ Upload failed';
+        });
+    }
+
+    // Reset file input
+    e.target.value = '';
+}
+
+
+
+
+    function renderVideoList() {
+    const videoListDiv = document.getElementById('videoList');
+    videoListDiv.innerHTML = '';
+
+    if (videoFiles.length === 0) {
+        videoListDiv.innerHTML = '<p style="color: #666; text-align: center;">No videos uploaded yet.</p>';
+        return;
+    }
+
+    videoFiles.forEach(file => {
+        const sanitizedId = file.name.replace(/[^\w]/g, '_');
+        const item = document.createElement('div');
+        item.className = 'list-item';
+        item.innerHTML = `
+            <div>
+                <strong>${file.name}</strong> 
+                <span style="color: #666; font-size: 0.9em;">(${(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+            </div>
+            <div>
+                <span id="status-${sanitizedId}">✅ Ready for analysis</span>
+                <button 
+                    onclick="removeVideo('${file.name.replace(/'/g, "\\'")}')" 
+                    class="btn-remove"
+                    title="Remove this video"
+                >
+                    ❌ Remove
+                </button>
+            </div>
+        `;
+        videoListDiv.appendChild(item);
+    });
+}
+// Function 5: Clear all videos
+function clearAllVideos() {
+    if (videoFiles.length === 0) return;
+    
+    if (confirm('Are you sure you want to clear all videos?')) {
+        videoFiles = [];
+        document.getElementById('videoList').innerHTML = '';
+    }
+}
+   function removeVideo(fileName) {
+    // Ask for confirmation
+    if (!confirm(`Are you sure you want to remove "${fileName}"?`)) {
+        return;
+    }
+    
+    // Find and remove from array
+    const index = videoFiles.findIndex(v => v.name === fileName);
+    
+    if (index !== -1) {
+        videoFiles.splice(index, 1);
+        
+        // Remove from DOM
+        const sanitizedId = fileName.replace(/[^\w]/g, '_');
+        const statusEl = document.getElementById(`status-${sanitizedId}`);
+        
+        if (statusEl && statusEl.parentElement) {
+            statusEl.parentElement.parentElement.remove();
+        }
+        
+        // Show message if no videos left
+        if (videoFiles.length === 0) {
+            document.getElementById('videoList').innerHTML = '<p style="color: #666; text-align: center;">No videos uploaded yet.</p>';
+        }
+        
+        console.log(`Removed: ${fileName}. Remaining: ${videoFiles.length}`);
+    }
+}
+
+    /* === Upload + Per-video sequential analysis === */
+
+// Function 2: Start analysis on uploaded files
+async function startAnalysis() {
+    if (videoFiles.length === 0) {
+        alert('Please upload at least one video before starting analysis.');
+        return;
+    }
+
+    const progressContainer = document.getElementById('progressContainer');
+    const progressFill = document.getElementById('progressFill');
+    const statusMessage = document.getElementById('statusMessage');
+
+    // Show progress bar
+    progressContainer.style.display = 'block';
+    progressFill.style.width = '0%';
+    progressFill.textContent = '0%';
+    statusMessage.innerHTML = '<div class="status-success">🔍 Starting analysis...</div>';
+
+    // ✅ Get and convert date to YYYY-MM-DD format
+    const dateInputValue = document.getElementById('dateInput')?.value || '';
+    let formattedDate = '';
+    
+    if (dateInputValue) {
+        // Check if date is in DD-MM-YYYY format and convert to YYYY-MM-DD
+        if (dateInputValue.includes('-')) {
+            const parts = dateInputValue.split('-');
+            if (parts.length === 3 && parts[0].length <= 2) {
+                // Format is DD-MM-YYYY, convert to YYYY-MM-DD
+                formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            } else {
+                // Already in YYYY-MM-DD format
+                formattedDate = dateInputValue;
+            }
+        } else {
+            formattedDate = dateInputValue;
+        }
+    } else {
+        formattedDate = new Date().toISOString().split('T')[0];
+    }
+
+    // ✅ Get date and time from flatpickr inputs
+    const dateInput = document.getElementById('dateInput')?.value || new Date().toISOString().split('T')[0];
+    const timeInput = document.getElementById('timeInput')?.value || new Date().toTimeString().split(' ')[0];
+    
+    // ✅ Get LP Name and LP ID from the lpData array (if any LP was added)
+    const lpName = lpData.length > 0 ? lpData[0].name : '';
+    const lpId = lpData.length > 0 ? lpData[0].id : '';
+    
+    // ✅ Collect metadata with correct field names (camelCase for backend)
+    const meta = {
+        locoNumber: document.getElementById('locoNumber')?.value || '',
+        trainNumber: document.getElementById('trainNumber')?.value || '',
+        lpName: lpName,      // ✅ From lpData array
+        lpId: lpId,          // ✅ From lpData array
+        cabType: document.getElementById('cabType')?.value || '',
+        date: dateInput,     // ✅ From flatpickr
+        time: timeInput      // ✅ From flatpickr
+    };
+
+    // ✅ Debug logging
+    console.log('📤 Sending metadata:', meta);
+    console.log('📋 LP Data array:', lpData);
+
+    const totalVideos = videoFiles.length;
+    let completed = 0;
+
+    try {
+        // Analyze each video one by one
+        for (const file of videoFiles) {
+            const sanitizedId = file.name.replace(/[^\w]/g, '_');
+            const statusEl = document.getElementById(`status-${sanitizedId}`);
+            
+            if (statusEl) statusEl.textContent = '🔍 Analyzing...';
+
+            try {
+                const response = await fetch('/api/start-analysis/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        files: [file.name],
+                        meta: meta
+                    })
+                });
+
+                const result = await response.json();
+                console.log('Analysis result:', result);
+
+                if (response.ok && result.message && result.message.includes('successfully')) {
+                    if (statusEl) statusEl.textContent = '✅ Analysis Complete';
+                    
+                    if (result.report_url) {
+                        const reportLink = document.createElement('a');
+                        reportLink.href = result.report_url;
+                        reportLink.textContent = ' 📄 View Report';
+                        reportLink.target = '_blank';
+                        reportLink.style.marginLeft = '10px';
+                        statusEl.appendChild(reportLink);
+                    }
+                } else {
+                    if (statusEl) statusEl.textContent = `❌ ${result.error || 'Analysis failed'}`;
+                }
+            } catch (err) {
+                console.error(`Error analyzing ${file.name}:`, err);
+                if (statusEl) statusEl.textContent = '⚠️ Analysis error';
+            }
+
+            completed++;
+            const percent = Math.round((completed / totalVideos) * 100);
+            progressFill.style.width = `${percent}%`;
+            progressFill.textContent = `${percent}%`;
+        }
+
+        progressFill.style.width = '100%';
+        progressFill.textContent = '100%';
+        statusMessage.innerHTML = '<div class="status-success">🎉 All analyses completed!</div>';
+
+    } catch (err) {
+        console.error('Analysis error:', err);
+        statusMessage.innerHTML = `<div class="status-error">⚠️ ${err.message || err}</div>`;
+        progressFill.style.width = '0%';
+        progressFill.textContent = '0%';
+    }
+}
+
+
+// Function 3: Remove a video from the list
+//function removeVideo(fileName) {
+ //   videoFiles = videoFiles.filter(v => v.name !== fileName);
+   /// renderVideoList();
+//}
+
+
+    function resetForm() {
+  // 1️⃣ Clear JS arrays and re-render lists
+  lpData = [];
+  videoFiles = [];
+  locoNumber = [];
+  trainNumber = [];
+  renderLPList();
+  renderVideoList();
+
+  // 2️⃣ Reset visible progress area
+  const progressContainer = document.getElementById('progressContainer');
+  const progressFill = document.getElementById('progressFill');
+  const statusMsg = document.getElementById('statusMessage');
+
+  if (progressContainer) progressContainer.style.display = 'none';
+  if (progressFill) progressFill.style.width = '0%';
+  if (statusMsg) statusMsg.innerHTML = '';
+
+  // 3️⃣ Clear all text inputs and dropdowns
+  const textFields = ['locoNumber', 'trainNumber', 'lpName', 'lpId', 'cabType'];
+  textFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (el.tagName === 'SELECT') el.selectedIndex = 0;
+      else el.value = '';
+    }
+  });
+
+  // 4️⃣ Clear any uploaded video input
+  const videoInput = document.getElementById('videoInput');
+  if (videoInput) videoInput.value = '';
+
+  // 5️⃣ Optional: reset progress log if present
+  const logBox = document.getElementById('analysisLog');
+  if (logBox) logBox.textContent = '';
+
+  console.log('✅ Form and related data have been fully reset.');
+}
+
+
+    /* === Summary & Reports loading from DB === */
+  async function loadSummaryAndReports() {
+  try {
+    console.log('Loading summary and reports...');
+    const res = await fetch('/api/get-summary/');
+    console.log('Response status:', res.status);
+    
+    if (!res.ok) {
+      console.error('Failed to fetch summary');
+      document.getElementById('summaryContent').innerHTML = '<p>Failed to load summary. Please try again.</p>';
+      return;
+    }
+    
+    const j = await res.json();
+    
+    // ✅ Filter out manual LP profiles (only show actual analyses)
+    const actualAnalyses = (j.summary || []).filter(row => {
+      return !row.video_name || !row.video_name.startsWith('LP_PROFILE_');
+    });
+    
+    window.allSummaryData = actualAnalyses;  // ✅ store filtered data globally
+
+    if (!j.success) return;
+
+    const summaryDiv = document.getElementById('summaryContent');
+    const reportsDiv = document.getElementById('reportsList');
+
+    if (!Array.isArray(actualAnalyses) || actualAnalyses.length === 0) {
+      summaryDiv.innerHTML = '<p>No analysis records yet.</p>';
+      reportsDiv.innerHTML = '<p>No reports yet.</p>';
+      return;
+    }
+
+    // Build enhanced summary table
+    let table = `
+       <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left; background:#f9f9f9;">
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Video</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Train No</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Loco Name</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">LP Name</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">LP ID</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Cab Type</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Score</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Remarks</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Report</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Time</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+
+    let reportsHtml = '<ul style="list-style:none; padding-left:0;">';
+
+    actualAnalyses.forEach((row) => {
+      const dateStr = new Date(row.created_at).toLocaleString();
+      const score = row.safety_score !== null ? `${row.safety_score.toFixed(1)}%` : '-';
+      const reportLink = row.report_path
+        ? `<a href="${row.report_path}" target="_blank">📄 View</a>`
+        : '-';
+
+     table += `
+     <tr style="transition:background 0.3s;" onmouseover="this.style.background='#e8f4ff'" onmouseout="this.style.background='transparent'">
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.video_name}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.train_number || row.trainNumber || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.loco_number || row.locoNumber || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.lp_name || row.lpName || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.lp_id || row.lpId || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.cab_type || row.cabType || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${score}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.remarks || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${reportLink}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${dateStr}</td>
+      </tr>
+    `;
+
+    if (row.report_path)
+      reportsHtml += `<li style="padding:6px 0;"><a href="${row.report_path}" target="_blank">${row.video_name}</a></li>`;
+    });
+
+    table += '</tbody></table>';
+    reportsHtml += '</ul>';
+    summaryDiv.innerHTML = table;
+    reportsDiv.innerHTML = reportsHtml;
+
+  } catch (e) {
+    console.error('Failed to load summary:', e);
+  }
+}
+
+function filterSummaryTable() {
+  const input = document.getElementById('summarySearch');
+  const filter = input.value.toLowerCase();
+  const summaryDiv = document.getElementById('summaryContent');
+
+  const data = (window.allSummaryData || []).filter(row => {
+    return (
+      (row.train_number && row.train_number.toLowerCase().includes(filter)) ||
+      (row.lp_name && row.lp_name.toLowerCase().includes(filter)) ||
+      (row.cab_type && row.cab_type.toLowerCase().includes(filter)) ||
+      (row.video_name && row.video_name.toLowerCase().includes(filter)) ||
+      (row.remarks && row.remarks.toLowerCase().includes(filter))
+    );
+  });
+
+  if (data.length === 0) {
+    summaryDiv.innerHTML = "<p>No matching records found.</p>";
+    return;
+  }
+
+  // rebuild filtered table
+  let table = `
+    <table style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left; background:#f9f9f9;">
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Video</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Train No</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">LP Name</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">LP ID</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Cab Type</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Score</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Remarks</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Report</th>
+          <th style="padding:8px; border-bottom:1px solid #ddd;">Time</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  data.forEach(row => {
+    const dateStr = new Date(row.created_at).toLocaleString();
+    const score = row.safety_score !== null ? `${row.safety_score.toFixed(1)}%` : '-';
+    const reportLink = row.report_path
+      ? `<a href="${row.report_path}" target="_blank">📄 View</a>`
+      : '-';
+
+   table += `
+  <tr style="transition:background 0.3s;" onmouseover="this.style.background='#e8f4ff'" onmouseout="this.style.background='transparent'">
+
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.video_name}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.train_number || row.trainNumber || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.loco_number || row.locoNumber || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.lp_name || row.lpName || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.lp_id || row.lpId || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.cab_type || row.cabType || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${score}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${row.remarks || '-'}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${reportLink}</td>
+        <td style="padding:8px; border-bottom:1px solid #eee;">${dateStr}</td>
+      </tr>
+    `;
+  });
+
+  table += '</tbody></table>';
+  summaryDiv.innerHTML = table;
+}
+
+    // Poll DB summary periodically (optional)
+    setInterval(() => {
+      const current = document.querySelector('.section.active');
+      if (!current) return;
+      if (current.id === 'summarySection' || current.id === 'reportSection') loadSummaryAndReports();
+    }, 5000);
+    async function pollProgress() {
+    try {
+        const res = await fetch('/api/get-progress/');
+        const data = await res.json();
+        if (!data.success) return;
+
+        data.progress.forEach(p => {
+            const cleanId = p.video_name.replace(/\W/g, '_');
+            const badge = document.getElementById(`status-${cleanId}`);
+            if (badge) {
+                badge.textContent = `${p.status} (${p.progress}%)`;
+                if (p.status === "Completed") badge.className = "status-badge status-done";
+                else if (p.status === "Error") badge.className = "status-badge status-error-small";
+                else badge.className = "status-badge status-running";
+            }
+        });
+    } catch (err) {
+        console.error('Progress polling failed:', err);
+    }
+}
+setInterval(pollProgress, 3000);
+
+// Refresh button event listener
+document.addEventListener('DOMContentLoaded', function() {
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function() {
+      console.log('Refresh clicked');
+      loadSummaryAndReports();
+    });
+  }
+});
+
+</script>
+</body>
+</html>

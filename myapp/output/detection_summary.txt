@@ -1,0 +1,26 @@
+
+Railway Safety Monitoring Report
+=================================
+Video: F:\shaheen\paper for buisness\Umpi paper\project complete\myproject\myapp\uploads\demo.mp4
+Date: 2025-12-05 13:09:53
+
+Processing Statistics:
+---------------------
+Total Frames: 18,595
+Frames Processed: 1,239 (6.7%)
+Frame Skip: 15
+Mode: Ultra-Fast
+
+Detection Results:
+-----------------
+Total Detections: 1,328
+Unique Events: 73
+Event Clips: 47
+Safety Score: 9.0%
+
+Event Summary:
+-------------
+Attention Diverted: 2 events (1105 detections)
+BP Continuity Check: 22 events (74 detections)
+FSD Operation: 24 events (74 detections)
+Safety Items on Desk: 25 events (75 detections)

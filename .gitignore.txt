@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+*.pt
+*.onnx
+*.h5
+*.mp4
+*.avi
+*.zip
+*.csv
+models/
+data/
+.env
+db.sqlite3

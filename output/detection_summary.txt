@@ -1,0 +1,31 @@
+
+Railway Safety Monitoring Report
+=================================
+Video: F:\shaheen\paper for buisness\Umpi paper\project complete\myproject\myapp\uploads\demo1_Ht04wDE.mp4
+Date: 2025-10-06 18:03:18
+
+Processing Statistics:
+---------------------
+Total Frames: 18,595
+Frames Processed: 1,859 (10.0%)
+Frame Skip: 10
+Mode: Ultra-Fast
+
+Detection Results:
+-----------------
+Total Detections: 2,886
+Unique Events: 71
+Event Clips: 61
+Safety Score: 0%
+
+Event Summary:
+-------------
+Attention Diverted: 1 events (1701 detections)
+BP Continuity Check: 14 events (130 detections)
+Cross Talk: 12 events (420 detections)
+Excess People in Cab: 3 events (111 detections)
+FSD Operation: 14 events (126 detections)
+Multiple at Motorman Chair: 12 events (240 detections)
+Packing Belongings: 4 events (30 detections)
+Safety Items on Desk: 10 events (123 detections)
+Signal Call Out: 1 events (5 detections)
